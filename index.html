@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>صائد الحشرات الطائرة 3D | Flying Insect Catcher</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <!-- 3D WebGL Canvas -->
+  <canvas id="canvas3d"></canvas>
+
+  <!-- Crosshair Reticle -->
+  <div id="crosshair">
+    <div class="reticle-circle"></div>
+    <div class="reticle-dot"></div>
+  </div>
+
+  <!-- In-Game UI Overlay -->
+  <div id="ui-overlay">
+    <!-- Top HUD Bar -->
+    <div class="top-bar">
+      <div class="stats-card">
+        <div class="stat-item">
+          <span class="stat-label">مجموع النقاط</span>
+          <span class="stat-val highlight" id="stat-score">0</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-label">الحشرات المصطادة</span>
+          <span class="stat-val" id="stat-caught">0</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-label">المضاعف</span>
+          <span class="stat-val accent" id="stat-combo">×1</span>
+        </div>
+      </div>
+
+      <div class="actions-card">
+        <button id="btn-lighting" class="btn-glass">☀️ نهار مشمس</button>
+        <button id="btn-audio" class="btn-glass active">🔊 الصوت: مفعّل</button>
+        <button id="btn-book" class="btn-glass">📖 موسوعة الحشرات</button>
+      </div>
+    </div>
+
+    <!-- Catch Notification Toast -->
+    <div id="catch-toast">
+      <div class="toast-icon" id="toast-icon">🦋</div>
+      <div class="toast-info">
+        <h4 id="toast-title">تم اصطياد فراشة الملك!</h4>
+        <p id="toast-desc">+100 نقطة</p>
+      </div>
+    </div>
+
+    <!-- Bottom HUD Bar -->
+    <div class="bottom-bar">
+      <!-- 2D Radar / Minimap -->
+      <div class="radar-container">
+        <canvas id="radar-canvas" width="130" height="130"></canvas>
+        <div class="radar-sweep"></div>
+        <div class="radar-label">رادار الحشرات</div>
+      </div>
+
+      <!-- Controls Guide -->
+      <div class="controls-card">
+        <div class="ctrl-item">
+          <span class="kbd">W</span><span class="kbd">A</span><span class="kbd">S</span><span class="kbd">D</span>
+          <span>تحرك</span>
+        </div>
+        <div class="ctrl-item">
+          <span class="kbd">Shift</span>
+          <span>ركض</span>
+        </div>
+        <div class="ctrl-item">
+          <span class="kbd">مسافة</span> أو <span class="kbd">فأرة يسار</span>
+          <span>ضربة الشبكة للصيد</span>
+        </div>
+        <div class="ctrl-item">
+          <span class="kbd">E</span>
+          <span>قفز</span>
+        </div>
+      </div>
+
+      <!-- Stamina Bar -->
+      <div class="stamina-wrapper stats-card">
+        <span class="stat-label">طاقة الركض (Stamina)</span>
+        <div class="stamina-bar-bg">
+          <div id="stamina-bar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insect Field Guide Encyclopedia Modal -->
+  <div id="encyclopedia-modal" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📖 موسوعة الحشرات الطائرة المكتشفة</h2>
+        <button id="btn-close-modal" class="modal-close">✕</button>
+      </div>
+      <div class="insects-grid" id="insects-grid">
+        <!-- Rendered dynamically by UIManager -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Screen & Instructions Overlay -->
+  <div id="instructions-modal">
+    <div class="start-box">
+      <h1>🏹 صائد الحشرات الطائرة 3D</h1>
+      <p class="subtitle">تجربة صيد واقعية ثلاثية الأبعاد في قلب الطبيعة</p>
+
+      <div style="text-align: right; margin-bottom: 24px; line-height: 1.8; color: #cbd5e1; font-size: 0.95rem;">
+        <p>🌿 <strong>مهمتك:</strong> استكشف الغابة والبحيرة بصفتك صياد سفاري محترف يحمل شبكة صيد ثلاثية الأبعاد، واصطد الفراشات واليعاسيب والدبابير الطائرة واليراعات المضيئة.</p>
+        <p>🎯 <strong>التحكم:</strong> استخدم الفأرة للنظر بحرية في الأفق، ومفاتيح <span class="kbd">W A S D</span> للتحرك، واقترب بحذر من الحشرات ثم اضغط <span class="kbd">مسافة</span> أو <strong>الزر الأيسر للفأرة</strong> للتوجيه وضرب الشبكة!</p>
+        <p>⚡ <strong>نصيحة:</strong> الحشرات سريعة وتهرب إذا ركضت نحوها بتهور، لذا باغتها بالشبكة في اللحظة المناسبة لرفع مضاعف النقاط المتتالي!</p>
+      </div>
+
+      <button id="btn-start" class="btn-start">ابدأ رحلة الصيد الآن 🚀</button>
+    </div>
+  </div>
+
+  <!-- Game Scripts -->
+  <script src="js/AudioSystem.js"></script>
+  <script src="js/Environment.js"></script>
+  <script src="js/Character.js"></script>
+  <script src="js/InsectManager.js"></script>
+  <script src="js/UIManager.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
