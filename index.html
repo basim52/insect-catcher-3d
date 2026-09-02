@@ -2,7 +2,10 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>صائد الحشرات الطائرة 3D | Flying Insect Catcher</title>
   <link rel="stylesheet" href="css/style.css">
   <!-- Three.js (Local with CDN fallback) -->
@@ -96,6 +99,23 @@
           <div id="stamina-bar"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Mobile On-Screen Virtual Controls -->
+  <div id="mobile-controls">
+    <!-- Virtual Joystick Zone (Bottom Left) -->
+    <div id="joystick-zone">
+      <div id="joystick-base">
+        <div id="joystick-stick"></div>
+      </div>
+    </div>
+
+    <!-- Touch Action Buttons (Bottom Right) -->
+    <div id="mobile-actions">
+      <button id="btn-touch-jump" class="touch-btn" title="قفز" aria-label="قفز">🦘</button>
+      <button id="btn-touch-sprint" class="touch-btn" title="ركض سريع" aria-label="ركض سريع">⚡</button>
+      <button id="btn-touch-swing" class="touch-btn primary" title="ضربة الشبكة" aria-label="صيد بالشبكة">🎯</button>
     </div>
   </div>
 

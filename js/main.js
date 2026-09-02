@@ -12,7 +12,8 @@ class Game {
       left: false,
       right: false,
       sprint: false,
-      jump: false
+      jump: false,
+      moveVector: { x: 0, z: 0 }
     };
 
     // Camera Orbit States
@@ -184,6 +185,183 @@ class Game {
         8.5
       );
     });
+
+    // Mobile Touch Controls
+    this.initTouchControls();
+  }
+
+  initTouchControls() {
+    // 1. Virtual Joystick
+    const joystickZone = document.getElementById('joystick-zone');
+    const joystickStick = document.getElementById('joystick-stick');
+    let joystickTouchId = null;
+    let joystickCenter = { x: 0, y: 0 };
+    const maxRadius = 45;
+
+    if (joystickZone) {
+      joystickZone.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.changedTouches[0];
+        joystickTouchId = touch.identifier;
+        const rect = joystickZone.getBoundingClientRect();
+        joystickCenter = {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2
+        };
+        this.updateJoystick(touch.clientX, touch.clientY, joystickCenter, maxRadius, joystickStick);
+      }, { passive: false });
+
+      joystickZone.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const touch = e.changedTouches[i];
+          if (touch.identifier === joystickTouchId) {
+            this.updateJoystick(touch.clientX, touch.clientY, joystickCenter, maxRadius, joystickStick);
+            break;
+          }
+        }
+      }, { passive: false });
+
+      const resetJoystick = (e) => {
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          if (e.changedTouches[i].identifier === joystickTouchId) {
+            joystickTouchId = null;
+            if (joystickStick) {
+              joystickStick.style.transform = 'translate(-50%, -50%)';
+            }
+            this.input.moveVector = { x: 0, z: 0 };
+            break;
+          }
+        }
+      };
+
+      joystickZone.addEventListener('touchend', resetJoystick, { passive: false });
+      joystickZone.addEventListener('touchcancel', resetJoystick, { passive: false });
+    }
+
+    // 2. Action Buttons
+    const btnSwing = document.getElementById('btn-touch-swing');
+    const btnSprint = document.getElementById('btn-touch-sprint');
+    const btnJump = document.getElementById('btn-touch-jump');
+
+    if (btnSwing) {
+      btnSwing.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.triggerSwing();
+      }, { passive: false });
+    }
+
+    if (btnSprint) {
+      btnSprint.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.input.sprint = !this.input.sprint;
+        btnSprint.classList.toggle('active', this.input.sprint);
+      }, { passive: false });
+    }
+
+    if (btnJump) {
+      btnJump.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.character.jump();
+      }, { passive: false });
+    }
+
+    // 3. Camera Touch Drag (Orbit around character)
+    let cameraTouchId = null;
+    let prevCamX = 0;
+    let prevCamY = 0;
+    let pinchStartDist = 0;
+
+    window.addEventListener('touchstart', (e) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        const target = touch.target;
+        if (target.closest('#joystick-zone') || target.closest('#mobile-actions') || target.closest('.btn-glass') || target.closest('.modal-content') || target.closest('.start-box')) {
+          continue;
+        }
+        if (cameraTouchId === null) {
+          cameraTouchId = touch.identifier;
+          prevCamX = touch.clientX;
+          prevCamY = touch.clientY;
+        }
+      }
+
+      // Two-finger pinch zoom detection
+      if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        pinchStartDist = Math.hypot(dx, dy);
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      // Two-finger pinch zoom
+      if (e.touches.length === 2 && pinchStartDist > 0) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        const diff = pinchStartDist - dist;
+        this.targetCameraDist = THREE.MathUtils.clamp(
+          this.targetCameraDist + diff * 0.012,
+          2.8,
+          8.5
+        );
+        pinchStartDist = dist;
+        return;
+      }
+
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (touch.identifier === cameraTouchId) {
+          const dx = touch.clientX - prevCamX;
+          const dy = touch.clientY - prevCamY;
+          prevCamX = touch.clientX;
+          prevCamY = touch.clientY;
+
+          this.cameraAngleY -= dx * 0.0055;
+          this.cameraPitch = THREE.MathUtils.clamp(
+            this.cameraPitch + dy * 0.004,
+            -0.1,
+            0.85
+          );
+          break;
+        }
+      }
+    }, { passive: true });
+
+    const resetCamTouch = (e) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === cameraTouchId) {
+          cameraTouchId = null;
+          break;
+        }
+      }
+      if (e.touches.length < 2) pinchStartDist = 0;
+    };
+
+    window.addEventListener('touchend', resetCamTouch, { passive: true });
+    window.addEventListener('touchcancel', resetCamTouch, { passive: true });
+  }
+
+  updateJoystick(clientX, clientY, center, maxRadius, stickEl) {
+    const dx = clientX - center.x;
+    const dy = clientY - center.y;
+    const dist = Math.hypot(dx, dy);
+    const clampedDist = Math.min(dist, maxRadius);
+    const angle = Math.atan2(dy, dx);
+
+    const stickX = Math.cos(angle) * clampedDist;
+    const stickY = Math.sin(angle) * clampedDist;
+
+    if (stickEl) {
+      stickEl.style.transform = `translate(calc(-50% + ${stickX}px), calc(-50% + ${stickY}px))`;
+    }
+
+    // Set normalized move vector
+    this.input.moveVector = {
+      x: stickX / maxRadius,
+      z: stickY / maxRadius
+    };
   }
 
   handleKey(code, isDown) {

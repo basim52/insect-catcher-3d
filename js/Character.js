@@ -326,10 +326,15 @@ class Character {
   update(delta, input, cameraAngleY) {
     // 1. Movement Direction Calculation
     const moveDir = new THREE.Vector3();
-    if (input.forward) moveDir.z -= 1;
-    if (input.backward) moveDir.z += 1;
-    if (input.left) moveDir.x -= 1;
-    if (input.right) moveDir.x += 1;
+    if (input.moveVector && (Math.abs(input.moveVector.x) > 0.05 || Math.abs(input.moveVector.z) > 0.05)) {
+      moveDir.x = input.moveVector.x;
+      moveDir.z = input.moveVector.z;
+    } else {
+      if (input.forward) moveDir.z -= 1;
+      if (input.backward) moveDir.z += 1;
+      if (input.left) moveDir.x -= 1;
+      if (input.right) moveDir.x += 1;
+    }
 
     const isMoving = moveDir.lengthSq() > 0;
 

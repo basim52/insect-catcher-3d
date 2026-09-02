@@ -548,10 +548,222 @@ body, html {
   box-shadow: 0 12px 30px var(--primary-glow);
 }
 
-@media (max-width: 768px) {
-  #ui-overlay { padding: 12px; }
-  .stats-card { padding: 10px 14px; gap: 12px; }
-  .stat-val { font-size: 1.2rem; }
-  .controls-card { display: none; }
-  .radar-container { width: 100px; height: 100px; }
+/* =========================================================
+   Mobile Touch Controls (Virtual Joystick & Action Buttons)
+   ========================================================= */
+#mobile-controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 40;
+  display: none; /* Auto-shown on touch devices or small screens */
+}
+
+/* Show touch controls on touch-enabled devices or screens <= 1024px */
+@media (hover: none) and (pointer: coarse), (max-width: 1024px) {
+  #mobile-controls {
+    display: block;
+  }
+}
+
+/* Virtual Joystick on Bottom-Left */
+#joystick-zone {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  width: 130px;
+  height: 130px;
+  pointer-events: auto;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#joystick-base {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.65);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+#joystick-stick {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.7);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: transform 0.05s ease-out;
+}
+
+/* Mobile Action Buttons on Bottom-Right */
+#mobile-actions {
+  position: absolute;
+  bottom: 30px;
+  right: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.touch-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.75);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
+  touch-action: manipulation;
+}
+
+.touch-btn:active {
+  transform: scale(0.88);
+  background: rgba(16, 185, 129, 0.4);
+  border-color: var(--primary);
+}
+
+.touch-btn.primary {
+  width: 76px;
+  height: 76px;
+  font-size: 2.1rem;
+  background: linear-gradient(135deg, #10b981, #047857);
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.8), 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.touch-btn.primary:active {
+  transform: scale(0.92);
+  background: linear-gradient(135deg, #34d399, #10b981);
+}
+
+.touch-btn.active {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-color: #fbbf24;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.8);
+}
+
+/* =========================================================
+   Mobile Screen Responsive Adjustments
+   ========================================================= */
+@media (max-width: 900px) {
+  #ui-overlay {
+    padding: 12px;
+  }
+
+  .top-bar {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .stats-card {
+    padding: 8px 14px;
+    gap: 12px;
+    justify-content: space-around;
+  }
+
+  .stat-label {
+    font-size: 0.68rem;
+  }
+
+  .stat-val {
+    font-size: 1.15rem;
+  }
+
+  .actions-card {
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .btn-glass {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    border-radius: 10px;
+  }
+
+  .controls-card {
+    display: none; /* Hide keyboard hints on mobile */
+  }
+
+  .bottom-bar {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .radar-container {
+    width: 90px;
+    height: 90px;
+    position: absolute;
+    top: 110px;
+    left: 12px;
+  }
+
+  .stamina-wrapper {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 130px;
+    padding: 6px 14px;
+    border-radius: 12px;
+  }
+
+  .start-box {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+
+  .start-box h1 {
+    font-size: 1.6rem;
+  }
+
+  .start-box p.subtitle {
+    font-size: 0.88rem;
+    margin-bottom: 14px;
+  }
+
+  .btn-start {
+    padding: 12px 30px;
+    font-size: 1.05rem;
+    width: 100%;
+  }
+
+  .modal-content {
+    padding: 20px 16px;
+  }
+
+  .modal-header h2 {
+    font-size: 1.25rem;
+  }
 }
