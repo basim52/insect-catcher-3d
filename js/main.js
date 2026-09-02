@@ -98,12 +98,35 @@ class Game {
     const instructionsModal = document.getElementById('instructions-modal');
     const btnStart = document.getElementById('btn-start');
 
+    this.startGame = () => {
+      if (instructionsModal) {
+        instructionsModal.style.opacity = '0';
+        instructionsModal.style.pointerEvents = 'none';
+        setTimeout(() => {
+          instructionsModal.style.display = 'none';
+        }, 200);
+      }
+      try {
+        if (this.audio) this.audio.init();
+      } catch (err) {
+        console.warn('Audio init error:', err);
+      }
+      try {
+        if (canvas && canvas.requestPointerLock) {
+          const req = canvas.requestPointerLock();
+          if (req && req.catch) {
+            req.catch(() => {});
+          }
+        }
+      } catch (err) {
+        console.warn('Pointer lock request error:', err);
+      }
+    };
+    window.startGame = () => this.startGame();
+
     if (btnStart) {
-      btnStart.addEventListener('click', () => {
-        if (instructionsModal) instructionsModal.style.display = 'none';
-        this.audio.init();
-        canvas.requestPointerLock();
-      });
+      btnStart.addEventListener('click', () => this.startGame());
+      btnStart.addEventListener('touchstart', () => this.startGame(), { passive: true });
     }
 
     document.addEventListener('pointerlockchange', () => {

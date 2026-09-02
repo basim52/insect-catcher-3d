@@ -107,9 +107,9 @@ class InsectManager {
     });
 
     // Insect Anatomy Meshes
-    // 1. Torso / Abdomen
-    const bodyGeom = new THREE.CapsuleGeometry(0.08, 0.28, 6, 8);
-    bodyGeom.rotateX(Math.PI / 2);
+    // 1. Torso / Abdomen (Universal compatible geometry)
+    const bodyGeom = new THREE.SphereGeometry(0.09, 8, 8);
+    bodyGeom.scale(0.85, 0.85, 2.2);
     const body = new THREE.Mesh(bodyGeom, bodyMat);
     body.castShadow = true;
     group.add(body);

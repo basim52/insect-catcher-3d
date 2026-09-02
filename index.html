@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>صائد الحشرات الطائرة 3D | Flying Insect Catcher</title>
   <link rel="stylesheet" href="css/style.css">
-  <!-- Three.js CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Three.js (Local with CDN fallback) -->
+  <script src="js/three.min.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+    }
+  </script>
 </head>
 <body>
   <!-- 3D WebGL Canvas -->
@@ -119,7 +124,7 @@
         <p>⚡ <strong>نصيحة:</strong> الحشرات سريعة وتهرب إذا ركضت نحوها بتهور، لذا باغتها بالشبكة في اللحظة المناسبة لرفع مضاعف النقاط المتتالي!</p>
       </div>
 
-      <button id="btn-start" class="btn-start">ابدأ رحلة الصيد الآن 🚀</button>
+      <button id="btn-start" class="btn-start" onclick="if(window.startGame){window.startGame();}else{var m=document.getElementById('instructions-modal');if(m)m.style.display='none';}">ابدأ رحلة الصيد الآن 🚀</button>
     </div>
   </div>
 
